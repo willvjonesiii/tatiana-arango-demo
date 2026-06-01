@@ -34,6 +34,30 @@
       overflow-x: hidden;
     }
 
+    /* ── IMAGE LOAD ANIMATION ── */
+    .img-reveal {
+      opacity: 0;
+      filter: blur(12px) brightness(0.7);
+      transform: scale(1.04);
+      transition:
+        opacity 1.1s cubic-bezier(0.22, 1, 0.36, 1),
+        filter 1.2s cubic-bezier(0.22, 1, 0.36, 1),
+        transform 1.4s cubic-bezier(0.22, 1, 0.36, 1);
+      will-change: opacity, filter, transform;
+    }
+    .img-reveal.revealed {
+      opacity: 1;
+      filter: blur(0) brightness(1);
+      transform: scale(1);
+    }
+    /* hero img has its own parallax transform — apply reveal differently */
+    .hero-bg .img-reveal {
+      transform: scale(1.08);
+    }
+    .hero-bg .img-reveal.revealed {
+      transform: scale(1.06) translateZ(0);
+    }
+
     /* ── CURSOR ── */
     .cursor {
       position: fixed; top: 0; left: 0;
@@ -594,6 +618,7 @@
         src="https://media-v2.tryst.a4cdn.org/profiles/7c466626-6e85-4fb7-8a4d-95fb61c9785a/photos/0587b74e-33aa-444e-9d22-74875e107e21/small.avif"
         alt="Tatiana"
         id="heroImg"
+        class="img-reveal"
         fetchpriority="high"
       />
     </div>
@@ -639,7 +664,7 @@
       <div class="about-img-wrap rv">
         <div class="about-img-frame"></div>
         <img
-          class="about-img"
+          class="about-img img-reveal"
           src="https://media-v2.tryst.a4cdn.org/profiles/7c466626-6e85-4fb7-8a4d-95fb61c9785a/photos/06fa4170-fa82-4368-b1fa-b27be9f7f286/small.avif"
           alt="Tatiana — About"
         />
@@ -669,6 +694,7 @@
     <div class="gallery-grid">
       <div class="gallery-item rv">
         <img
+          class="img-reveal"
           src="https://media-v2.tryst.a4cdn.org/profiles/7c466626-6e85-4fb7-8a4d-95fb61c9785a/photos/ae639ea4-2e30-4222-a53a-3011b01fd739/small.avif"
           alt="Tatiana"
         />
@@ -676,6 +702,7 @@
       </div>
       <div class="gallery-item rv">
         <img
+          class="img-reveal"
           src="https://media-v2.tryst.a4cdn.org/profiles/7c466626-6e85-4fb7-8a4d-95fb61c9785a/photos/725baead-e934-4c8e-a192-ef332549fd4b/small.avif"
           alt="Tatiana"
         />
@@ -683,6 +710,7 @@
       </div>
       <div class="gallery-item rv">
         <img
+          class="img-reveal"
           src="https://media-v2.tryst.a4cdn.org/profiles/7c466626-6e85-4fb7-8a4d-95fb61c9785a/photos/0587b74e-33aa-444e-9d22-74875e107e21/small.avif"
           alt="Tatiana"
         />
@@ -690,6 +718,7 @@
       </div>
       <div class="gallery-item rv">
         <img
+          class="img-reveal"
           src="https://media-v2.tryst.a4cdn.org/profiles/7c466626-6e85-4fb7-8a4d-95fb61c9785a/photos/06fa4170-fa82-4368-b1fa-b27be9f7f286/small.avif"
           alt="Tatiana"
         />
@@ -815,10 +844,28 @@
       });
     });
 
-    // ── HERO PARALLAX + LOAD ──
+    // ── IMAGE REVEAL ──
+    // Hero loads immediately on page load
     const heroImg = document.getElementById('heroImg');
-    const loadHero = () => requestAnimationFrame(() => heroImg.classList.add('loaded'));
-    heroImg.complete ? loadHero() : heroImg.addEventListener('load', loadHero);
+    const revealImg = (img, delay = 0) => {
+      const trigger = () => setTimeout(() => requestAnimationFrame(() => img.classList.add('revealed')), delay);
+      img.complete ? trigger() : img.addEventListener('load', trigger);
+    };
+    revealImg(heroImg, 100);
+
+    // All other img-reveal elements trigger when they enter the viewport
+    const imgObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        const img = entry.target;
+        if (img === heroImg) return; // hero handled above
+        revealImg(img, 80);
+        imgObserver.unobserve(img);
+      });
+    }, { threshold: 0.08 });
+    document.querySelectorAll('.img-reveal').forEach(img => imgObserver.observe(img));
+
+    // ── HERO PARALLAX ──
     window.addEventListener('scroll', () => {
       const offset = Math.min(window.scrollY * 0.04, window.innerHeight * 0.055);
       heroImg.style.transform = `scale(1.06) translateY(-${offset}px) translateZ(0)`;
