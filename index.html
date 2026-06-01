@@ -533,10 +533,13 @@
       .offerings-grid { grid-template-columns: 1fr 1fr; }
     }
 
-    @media (max-width: 640px) {
+    @media (max-width: 900px) {
       .nav-right { display: none; }
       .nav-toggle { display: flex; }
       .mobile-menu { display: flex; }
+    }
+
+    @media (max-width: 640px) {
       .gallery-grid { grid-template-columns: 1fr 1fr; gap: 6px; }
       .gallery-item:nth-child(1) { grid-column: span 2; }
       .offerings-grid { grid-template-columns: 1fr; }
