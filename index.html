@@ -545,6 +545,107 @@
     }
     .footer-contact a:hover { color: var(--gold-lt); }
 
+    /* ── DETAILS STRIP ── */
+    .details-strip {
+      background: var(--rose);
+      padding: 2.4rem var(--pad-x);
+    }
+    .details-inner {
+      max-width: 1200px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: center;
+      flex-wrap: wrap; gap: 1.2rem 0;
+    }
+    .detail-item {
+      display: flex; flex-direction: column; align-items: center; gap: 0.3rem;
+      padding: 0 1.8rem;
+    }
+    .detail-label {
+      font-size: 0.58rem; letter-spacing: 0.22em; text-transform: uppercase;
+      color: rgba(245,238,224,0.55); font-weight: 400;
+    }
+    .detail-value {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(0.85rem, 1.4vw, 1rem);
+      color: var(--cream); font-weight: 400; letter-spacing: 0.04em;
+    }
+    .detail-sep {
+      color: rgba(245,238,224,0.25); font-size: 0.55rem;
+    }
+
+    /* ── RATES ── */
+    .rates { background: var(--ink2); }
+    .rates-inner { max-width: 1100px; margin: 0 auto; }
+    .rates-header { margin-bottom: 3.5rem; }
+    .rates-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5px;
+    }
+    .rate-block {
+      background: var(--ink);
+      border: 1px solid rgba(200,154,82,0.1);
+      padding: 2.8rem 2.4rem;
+      transition: border-color 0.3s;
+    }
+    .rate-block:hover { border-color: rgba(200,154,82,0.3); }
+    .rate-block-header {
+      display: flex; flex-direction: column; gap: 0.25rem;
+      margin-bottom: 2rem;
+      padding-bottom: 1.4rem;
+      border-bottom: 1px solid rgba(200,154,82,0.15);
+    }
+    .rate-type-label {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(1.4rem, 2vw, 1.7rem);
+      font-weight: 400; font-style: italic;
+      color: var(--cream);
+    }
+    .rate-location {
+      font-size: 0.62rem; letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--gold); font-weight: 400;
+    }
+    .rate-rows { display: flex; flex-direction: column; gap: 0; }
+    .rate-row {
+      display: flex; justify-content: space-between; align-items: baseline;
+      padding: 1rem 0;
+      border-bottom: 1px solid rgba(245,238,224,0.06);
+    }
+    .rate-row:last-child { border-bottom: none; }
+    .rate-duration {
+      font-size: 0.78rem; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--muted); font-weight: 300;
+    }
+    .rate-price {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(1.3rem, 2vw, 1.6rem);
+      font-weight: 400; color: var(--gold-lt);
+      letter-spacing: 0.02em;
+    }
+    .rate-note {
+      margin-top: 1.6rem;
+      font-size: 0.68rem; letter-spacing: 0.08em;
+      color: var(--muted); font-style: italic;
+      line-height: 1.6;
+    }
+    .avail-rows { display: flex; flex-direction: column; gap: 0; }
+    .avail-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 1rem 0;
+      border-bottom: 1px solid rgba(245,238,224,0.06);
+    }
+    .avail-row:last-child { border-bottom: none; }
+    .avail-day {
+      font-size: 0.78rem; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--muted); font-weight: 300;
+    }
+    .avail-time {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(0.95rem, 1.5vw, 1.1rem);
+      font-weight: 400; letter-spacing: 0.02em;
+    }
+    .avail-open .avail-time { color: var(--gold-lt); }
+    .avail-closed .avail-time { color: var(--muted); font-style: italic; }
+
     /* ── RESPONSIVE ── */
     @media (max-width: 900px) {
       .about-inner { grid-template-columns: 1fr; }
@@ -561,9 +662,16 @@
       .nav-right { display: none; }
       .nav-toggle { display: flex; }
       .mobile-menu { display: flex; }
+      .rates-grid { grid-template-columns: 1fr 1fr; }
+      .avail-block { grid-column: span 2; }
     }
 
     @media (max-width: 640px) {
+      .rates-grid { grid-template-columns: 1fr; }
+      .avail-block { grid-column: span 1; }
+      .details-inner { gap: 0.8rem 0; }
+      .detail-item { padding: 0 1rem; }
+      .detail-sep { display: none; }
       .gallery-grid { grid-template-columns: 1fr 1fr; gap: 6px; }
       .gallery-item:nth-child(1) { grid-column: span 2; }
       .offerings-grid { grid-template-columns: 1fr; }
@@ -593,7 +701,7 @@
     <div class="nav-right">
       <a href="#about">About</a>
       <a href="#gallery">Gallery</a>
-      <a href="#offerings">Offerings</a>
+      <a href="#rates">Rates</a>
       <a href="#screening">Screening</a>
       <a href="mailto:tatianas.colombianparadise@gmail.com" class="nav-cta">Make Contact</a>
     </div>
@@ -606,7 +714,7 @@
   <div class="mobile-menu" id="mobileMenu">
     <a href="#about" class="mobile-link">About</a>
     <a href="#gallery" class="mobile-link">Gallery</a>
-    <a href="#offerings" class="mobile-link">Offerings</a>
+    <a href="#rates" class="mobile-link">Rates</a>
     <a href="#screening" class="mobile-link">Screening</a>
     <a href="mailto:tatianas.colombianparadise@gmail.com" class="nav-cta">Make Contact</a>
   </div>
@@ -727,29 +835,127 @@
     </div>
   </section>
 
-  <!-- OFFERINGS -->
-  <section class="offerings" id="offerings">
-    <div class="offerings-inner">
-      <div class="offerings-header rv">
-        <p class="section-eyebrow">What I Offer</p>
-        <h2 class="section-title">An Adventure in <em>Intimacy</em></h2>
+  <!-- DETAILS STRIP -->
+  <section class="details-strip">
+    <div class="details-inner rv">
+      <div class="detail-item">
+        <span class="detail-label">Location</span>
+        <span class="detail-value">Tysons Corner, VA</span>
       </div>
-      <div class="offerings-grid">
-        <div class="offering-card rv">
-          <p class="offering-num">01</p>
-          <h3 class="offering-name">The <em>Experience</em></h3>
-          <p class="offering-desc">Premium companionship crafted for gentlemen who demand quality in every respect. Genuine warmth, stimulating conversation, and an unforgettable presence.</p>
+      <div class="detail-sep">✦</div>
+      <div class="detail-item">
+        <span class="detail-label">Age</span>
+        <span class="detail-value">30s</span>
+      </div>
+      <div class="detail-sep">✦</div>
+      <div class="detail-item">
+        <span class="detail-label">Height</span>
+        <span class="detail-value">5'3" / 159 cm</span>
+      </div>
+      <div class="detail-sep">✦</div>
+      <div class="detail-item">
+        <span class="detail-label">Figure</span>
+        <span class="detail-value">Athletic · DDD</span>
+      </div>
+      <div class="detail-sep">✦</div>
+      <div class="detail-item">
+        <span class="detail-label">Hair</span>
+        <span class="detail-value">Black</span>
+      </div>
+      <div class="detail-sep">✦</div>
+      <div class="detail-item">
+        <span class="detail-label">Eyes</span>
+        <span class="detail-value">Brown</span>
+      </div>
+      <div class="detail-sep">✦</div>
+      <div class="detail-item">
+        <span class="detail-label">Caters To</span>
+        <span class="detail-value">Men</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- RATES -->
+  <section class="rates" id="rates">
+    <div class="rates-inner">
+      <div class="rates-header rv">
+        <p class="section-eyebrow">Investment</p>
+        <h2 class="section-title">Rates &amp; <em>Availability</em></h2>
+      </div>
+
+      <div class="rates-grid">
+
+        <!-- Incall -->
+        <div class="rate-block rv">
+          <div class="rate-block-header">
+            <span class="rate-type-label">Incall</span>
+            <span class="rate-location">Tysons Corner, VA</span>
+          </div>
+          <div class="rate-rows">
+            <div class="rate-row">
+              <span class="rate-duration">30 min</span>
+              <span class="rate-price">$250</span>
+            </div>
+            <div class="rate-row">
+              <span class="rate-duration">60 min</span>
+              <span class="rate-price">$300</span>
+            </div>
+            <div class="rate-row">
+              <span class="rate-duration">90 min</span>
+              <span class="rate-price">$600</span>
+            </div>
+          </div>
         </div>
-        <div class="offering-card rv">
-          <p class="offering-num">02</p>
-          <h3 class="offering-name">Your <em>Fantasy</em></h3>
-          <p class="offering-desc">Enter a space where you are truly welcomed. My black eyes, my smile, my delightful body — a dazzling adventure of intimacy awaits from the moment we meet.</p>
+
+        <!-- Touring / Outcall -->
+        <div class="rate-block rv">
+          <div class="rate-block-header">
+            <span class="rate-type-label">Touring</span>
+            <span class="rate-location">Your location</span>
+          </div>
+          <div class="rate-rows">
+            <div class="rate-row">
+              <span class="rate-duration">30 min</span>
+              <span class="rate-price">$300</span>
+            </div>
+            <div class="rate-row">
+              <span class="rate-duration">60 min</span>
+              <span class="rate-price">$400</span>
+            </div>
+            <div class="rate-row">
+              <span class="rate-duration">90 min</span>
+              <span class="rate-price">$550</span>
+            </div>
+            <div class="rate-row">
+              <span class="rate-duration">2 hours</span>
+              <span class="rate-price">$700</span>
+            </div>
+          </div>
+          <p class="rate-note">30% deposit required for touring bookings</p>
         </div>
-        <div class="offering-card rv">
-          <p class="offering-num">03</p>
-          <h3 class="offering-name">Dinner &amp; <em>Beyond</em></h3>
-          <p class="offering-desc">An elegant Colombian companion for social engagements, fine dining, and private evenings. Availability and arrangements discussed on inquiry.</p>
+
+        <!-- Availability -->
+        <div class="rate-block avail-block rv">
+          <div class="rate-block-header">
+            <span class="rate-type-label">Availability</span>
+            <span class="rate-location">Weekly schedule</span>
+          </div>
+          <div class="avail-rows">
+            <div class="avail-row avail-open">
+              <span class="avail-day">Mon – Fri</span>
+              <span class="avail-time">9:00 am – 7:00 pm</span>
+            </div>
+            <div class="avail-row avail-open">
+              <span class="avail-day">Saturday</span>
+              <span class="avail-time">9:00 am – 2:00 pm</span>
+            </div>
+            <div class="avail-row avail-closed">
+              <span class="avail-day">Sunday</span>
+              <span class="avail-time">Unavailable</span>
+            </div>
+          </div>
         </div>
+
       </div>
     </div>
   </section>
@@ -794,7 +1000,7 @@
         <nav class="footer-links">
           <a href="#about">About</a>
           <a href="#gallery">Gallery</a>
-          <a href="#offerings">Offerings</a>
+          <a href="#rates">Rates</a>
           <a href="#screening">Screening</a>
         </nav>
       </div>
