@@ -611,25 +611,30 @@
       font-size: 0.62rem; letter-spacing: 0.2em; text-transform: uppercase;
       color: var(--gold); font-weight: 400;
     }
-    /* scan line */
+    /* scan line — living inscription port */
     .rate-rows, .avail-rows { position: relative; }
     .scan-line {
-      position: absolute; left: 0; right: 0;
-      height: 1px;
+      position: absolute; top: 0; left: 0;
+      width: 100%; height: 2px;
       background: linear-gradient(to right, transparent, var(--gold), transparent);
-      top: 0;
       opacity: 0;
+      filter: blur(1px);
+      box-shadow: 0 0 8px var(--gold), 0 0 18px rgba(200,154,82,0.4);
+      pointer-events: none; z-index: 4;
+    }
+    /* row flash on inscription */
+    .rate-row, .avail-row {
+      position: relative;
+    }
+    .rate-row::after, .avail-row::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: rgba(200,154,82,0.06);
+      opacity: 0;
+      transition: opacity 0.35s ease;
       pointer-events: none;
-      transition: none;
     }
-    .scan-line.scanning {
-      opacity: 1;
-      transition: top 0.9s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.15s ease;
-    }
-    .scan-line.done {
-      opacity: 0;
-      transition: opacity 0.6s ease 0.2s;
-    }
+    .rate-row.flash::after, .avail-row.flash::after { opacity: 1; }
 
     .rate-rows { display: flex; flex-direction: column; gap: 0; }
     .rate-row {
@@ -1107,32 +1112,55 @@
       heroImg.style.transform = `scale(1.06) translateY(-${offset}px) translateZ(0)`;
     }, { passive: true });
 
-    // ── RATE BLOCK SCAN LINE (first hover only) ──
-    document.querySelectorAll('.rate-block').forEach(block => {
-      const rows = block.querySelector('.rate-rows, .avail-rows');
-      if (!rows) return;
-      const line = rows.querySelector('.scan-line');
-      if (!line) return;
+    // ── RATE BLOCK SCAN LINE — living inscription port ──
+    (function () {
+      const DURATION = 4400;
 
-      let fired = false;
-      block.addEventListener('mouseenter', () => {
-        if (fired) return;
-        fired = true;
-        const h = rows.offsetHeight;
-        // Start at top
-        line.style.top = '0px';
-        line.classList.add('scanning');
-        // Force reflow so transition fires
-        line.getBoundingClientRect();
-        // Animate to bottom
-        line.style.top = h + 'px';
-        // Fade out after travel
-        setTimeout(() => {
-          line.classList.remove('scanning');
-          line.classList.add('done');
-        }, 950);
+      document.querySelectorAll('.rate-block').forEach(block => {
+        const rows = block.querySelector('.rate-rows, .avail-rows');
+        if (!rows) return;
+        const line = rows.querySelector('.scan-line');
+        if (!line) return;
+        const rowEls = Array.from(rows.querySelectorAll('.rate-row, .avail-row'));
+        let fired = false;
+
+        block.addEventListener('mouseenter', () => {
+          if (fired) return;
+          fired = true;
+
+          const total = rows.offsetHeight;
+          const triggers = rowEls.map(r => r.offsetTop + r.offsetHeight * 0.5);
+
+          let nextTrigger = 0;
+          const startTime = performance.now();
+          line.style.opacity = '1';
+
+          function tick(now) {
+            const elapsed = now - startTime;
+            const progress = Math.min(elapsed / DURATION, 1);
+            const pos = progress * total;
+
+            line.style.transform = `translateY(${pos}px)`;
+
+            while (nextTrigger < triggers.length && pos >= triggers[nextTrigger]) {
+              const row = rowEls[nextTrigger];
+              row.classList.add('flash');
+              setTimeout(() => row.classList.remove('flash'), 500);
+              nextTrigger++;
+            }
+
+            if (progress < 1) {
+              requestAnimationFrame(tick);
+            } else {
+              line.style.transition = 'opacity 0.8s ease';
+              line.style.opacity = '0';
+            }
+          }
+
+          requestAnimationFrame(tick);
+        });
       });
-    });
+    })();
 
     // ── SCROLL REVEAL ──
     document.body.classList.add('js-loaded');
