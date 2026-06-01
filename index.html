@@ -87,7 +87,7 @@
     .rv.visible { opacity: 1; transform: none; }
 
     /* ── NAV ── */
-    nav {
+    nav#nav {
       position: fixed; top: 0; left: 0; right: 0;
       z-index: 1000;
       display: flex; align-items: center; justify-content: space-between;
@@ -95,7 +95,7 @@
       padding: 1.6rem var(--pad-x);
       transition: background 0.4s, backdrop-filter 0.4s, padding 0.4s;
     }
-    nav.scrolled {
+    nav#nav.scrolled {
       background: rgba(9,6,10,0.88);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
