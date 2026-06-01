@@ -91,6 +91,7 @@
       position: fixed; top: 0; left: 0; right: 0;
       z-index: 1000;
       display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: nowrap;
       padding: 1.6rem var(--pad-x);
       transition: background 0.4s, backdrop-filter 0.4s, padding 0.4s;
     }
@@ -116,13 +117,15 @@
       color: var(--gold);
       font-weight: 400;
     }
-    .nav-right { display: flex; align-items: center; gap: 2rem; }
+    .nav-right { display: flex; align-items: center; gap: 1.6rem; flex-wrap: nowrap; flex-shrink: 0; }
     .nav-right a {
-      font-size: 0.7rem;
-      letter-spacing: 0.18em;
+      font-size: 0.68rem;
+      letter-spacing: 0.15em;
       text-transform: uppercase;
       color: var(--muted);
       text-decoration: none;
+      white-space: nowrap;
+      flex-shrink: 0;
       transition: color 0.3s;
     }
     .nav-right a:hover { color: var(--cream); }
