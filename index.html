@@ -585,9 +585,16 @@
       background: var(--ink);
       border: 1px solid rgba(200,154,82,0.1);
       padding: 2.8rem 2.4rem;
-      transition: border-color 0.3s;
+      transition: border-color 0.3s, transform 0.45s cubic-bezier(0.22,1,0.36,1), box-shadow 0.45s ease;
+      transform-origin: center center;
+      position: relative;
     }
-    .rate-block:hover { border-color: rgba(200,154,82,0.3); }
+    .rate-block:hover {
+      border-color: rgba(200,154,82,0.3);
+      transform: scale(1.025);
+      box-shadow: 0 12px 48px rgba(0,0,0,0.45), 0 0 0 1px rgba(200,154,82,0.18);
+      z-index: 2;
+    }
     .rate-block-header {
       display: flex; flex-direction: column; gap: 0.25rem;
       margin-bottom: 2rem;
@@ -604,6 +611,26 @@
       font-size: 0.62rem; letter-spacing: 0.2em; text-transform: uppercase;
       color: var(--gold); font-weight: 400;
     }
+    /* scan line */
+    .rate-rows, .avail-rows { position: relative; }
+    .scan-line {
+      position: absolute; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(to right, transparent, var(--gold), transparent);
+      top: 0;
+      opacity: 0;
+      pointer-events: none;
+      transition: none;
+    }
+    .scan-line.scanning {
+      opacity: 1;
+      transition: top 0.9s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.15s ease;
+    }
+    .scan-line.done {
+      opacity: 0;
+      transition: opacity 0.6s ease 0.2s;
+    }
+
     .rate-rows { display: flex; flex-direction: column; gap: 0; }
     .rate-row {
       display: flex; justify-content: space-between; align-items: baseline;
@@ -892,6 +919,7 @@
             <span class="rate-location">Tysons Corner, VA</span>
           </div>
           <div class="rate-rows">
+            <div class="scan-line"></div>
             <div class="rate-row">
               <span class="rate-duration">30 min</span>
               <span class="rate-price">$250</span>
@@ -914,6 +942,7 @@
             <span class="rate-location">Your location</span>
           </div>
           <div class="rate-rows">
+            <div class="scan-line"></div>
             <div class="rate-row">
               <span class="rate-duration">30 min</span>
               <span class="rate-price">$300</span>
@@ -941,6 +970,7 @@
             <span class="rate-location">Weekly schedule</span>
           </div>
           <div class="avail-rows">
+            <div class="scan-line"></div>
             <div class="avail-row avail-open">
               <span class="avail-day">Mon – Fri</span>
               <span class="avail-time">9:00 am – 7:00 pm</span>
@@ -1076,6 +1106,33 @@
       const offset = Math.min(window.scrollY * 0.04, window.innerHeight * 0.055);
       heroImg.style.transform = `scale(1.06) translateY(-${offset}px) translateZ(0)`;
     }, { passive: true });
+
+    // ── RATE BLOCK SCAN LINE (first hover only) ──
+    document.querySelectorAll('.rate-block').forEach(block => {
+      const rows = block.querySelector('.rate-rows, .avail-rows');
+      if (!rows) return;
+      const line = rows.querySelector('.scan-line');
+      if (!line) return;
+
+      let fired = false;
+      block.addEventListener('mouseenter', () => {
+        if (fired) return;
+        fired = true;
+        const h = rows.offsetHeight;
+        // Start at top
+        line.style.top = '0px';
+        line.classList.add('scanning');
+        // Force reflow so transition fires
+        line.getBoundingClientRect();
+        // Animate to bottom
+        line.style.top = h + 'px';
+        // Fade out after travel
+        setTimeout(() => {
+          line.classList.remove('scanning');
+          line.classList.add('done');
+        }, 950);
+      });
+    });
 
     // ── SCROLL REVEAL ──
     document.body.classList.add('js-loaded');
