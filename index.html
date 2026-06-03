@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500;1,600&family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet" />
+  <script src="https://js.stripe.com/v3/"></script>
 
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -740,6 +741,157 @@
     .avail-open .avail-time { color: var(--gold-lt); }
     .avail-closed .avail-time { color: var(--muted); font-style: italic; }
 
+    /* ── PAYMENT PORTAL ── */
+    .payment { background: var(--ink2); }
+    .payment-inner { max-width: 1100px; margin: 0 auto; }
+    .payment-header { margin-bottom: 3rem; }
+    .payment-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: start;
+    }
+
+    /* Amount pills */
+    .amount-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1.5rem;
+    }
+    .amount-pill input[type="radio"] { display: none; }
+    .amount-pill label {
+      display: flex; flex-direction: column; gap: 0.2rem;
+      padding: 1rem 1.2rem;
+      border: 1px solid rgba(200,154,82,0.18);
+      cursor: none;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .amount-pill input:checked + label {
+      border-color: var(--gold);
+      background: rgba(200,154,82,0.08);
+    }
+    .amount-pill label:hover { border-color: rgba(200,154,82,0.45); }
+    .pill-price {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.4rem; font-weight: 400; color: var(--gold-lt);
+    }
+    .pill-label {
+      font-size: 0.62rem; letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--muted); font-weight: 300;
+    }
+    .custom-amount-wrap { display: none; margin-bottom: 1rem; }
+    .custom-amount-wrap.visible { display: block; }
+
+    /* Pay tabs */
+    .pay-tabs {
+      display: flex; border-bottom: 1px solid rgba(200,154,82,0.2); margin-bottom: 1.5rem;
+    }
+    .pay-tab {
+      font-family: 'Jost', sans-serif;
+      font-size: 0.68rem; letter-spacing: 0.2em; text-transform: uppercase;
+      padding: 0.75rem 1.4rem; color: var(--muted); cursor: none;
+      border: none; border-bottom: 2px solid transparent; margin-bottom: -1px;
+      background: none; outline: none; transition: color 0.2s, border-color 0.2s;
+      -webkit-appearance: none; appearance: none;
+    }
+    .pay-tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+    .pay-tab:hover { color: var(--cream); }
+    .pay-panel { display: none; }
+    .pay-panel.active { display: block; }
+
+    /* Card fields */
+    .stripe-card-field {
+      background: rgba(9,6,10,0.8); border: 1px solid rgba(200,154,82,0.18);
+      padding: 0.9rem 1.1rem; margin-bottom: 0.75rem;
+      display: flex; align-items: center; gap: 0.8rem; transition: border-color 0.2s;
+    }
+    .stripe-card-field:focus-within { border-color: var(--gold); }
+    .stripe-card-field svg { flex-shrink: 0; opacity: 0.4; }
+    .stripe-card-field input {
+      background: none; border: none; outline: none;
+      color: var(--cream); font-family: 'Jost',sans-serif;
+      font-size: 0.9rem; font-weight: 300; width: 100%;
+      -webkit-appearance: none; appearance: none;
+    }
+    .stripe-card-field input::placeholder { color: rgba(245,238,224,0.3); }
+    .stripe-secure {
+      display: flex; align-items: center; gap: 0.5rem;
+      font-size: 0.62rem; letter-spacing: 0.12em;
+      color: rgba(245,238,224,0.3); margin-top: 0.8rem;
+    }
+    .pay-btn {
+      width: 100%; padding: 1rem;
+      background: var(--gold); color: var(--ink);
+      font-family: 'Jost',sans-serif; font-size: 0.72rem; font-weight: 400;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      border: none; outline: none; cursor: none;
+      -webkit-appearance: none; appearance: none;
+      margin-top: 1rem; transition: background 0.2s, transform 0.15s;
+      white-space: nowrap; flex-shrink: 0;
+    }
+    .pay-btn:hover { background: var(--gold-lt); transform: translateY(-1px); }
+    .pay-btn.loading { opacity: 0.7; pointer-events: none; }
+
+    /* BTC */
+    .btc-network-badge {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      font-size: 0.6rem; letter-spacing: 0.18em; text-transform: uppercase;
+      padding: 0.3rem 0.7rem;
+      background: rgba(247,147,26,0.1); border: 1px solid rgba(247,147,26,0.3);
+      color: #f7931a; margin-bottom: 1rem;
+    }
+    .btc-qr-wrap { display: flex; align-items: center; gap: 2rem; margin-bottom: 1.5rem; }
+    .btc-qr {
+      width: 120px; height: 120px; flex-shrink: 0;
+      border: 1px solid rgba(200,154,82,0.2); padding: 6px; background: #fff;
+    }
+    .btc-qr img { width: 100%; height: 100%; display: block; image-rendering: pixelated; }
+    .btc-label {
+      font-size: 0.62rem; letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--gold); margin-bottom: 0.5rem;
+    }
+    .btc-address-wrap {
+      display: flex; align-items: center; gap: 0.75rem;
+      background: rgba(9,6,10,0.8); border: 1px solid rgba(200,154,82,0.18);
+      padding: 0.9rem 1rem; margin-bottom: 1.2rem;
+    }
+    .btc-address {
+      font-family: monospace; font-size: 0.72rem;
+      color: var(--cream); word-break: break-all; flex: 1; line-height: 1.5;
+    }
+    .btc-copy {
+      flex-shrink: 0; background: none; border: 1px solid rgba(200,154,82,0.2);
+      outline: none; color: var(--muted); font-size: 0.62rem;
+      letter-spacing: 0.15em; text-transform: uppercase;
+      padding: 0.5rem 0.9rem; cursor: none; font-family: 'Jost',sans-serif;
+      transition: border-color 0.2s, color 0.2s;
+      -webkit-appearance: none; appearance: none; white-space: nowrap;
+    }
+    .btc-copy:hover { border-color: var(--gold); color: var(--gold); }
+    .btc-copy.copied { border-color: #4a7c59; color: #4a7c59; }
+    .btc-note {
+      font-size: 0.78rem; font-weight: 300;
+      color: rgba(245,238,224,0.55); line-height: 1.8;
+    }
+    .btc-note a { color: var(--gold); }
+
+    /* Explainer */
+    .payment-explainer { padding-top: 0.5rem; }
+    .explainer-item {
+      display: flex; gap: 1.2rem; align-items: flex-start;
+      padding: 1.4rem 0; border-bottom: 1px solid rgba(200,154,82,0.12);
+    }
+    .explainer-item:first-child { padding-top: 0; }
+    .explainer-icon {
+      width: 36px; height: 36px; flex-shrink: 0;
+      border: 1px solid rgba(200,154,82,0.2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.85rem; color: var(--gold);
+    }
+    .explainer-title {
+      font-family: 'Cormorant Garamond', serif; font-size: 1.05rem;
+      font-weight: 400; color: var(--cream); margin-bottom: 0.3rem;
+    }
+    .explainer-desc {
+      font-size: 0.8rem; font-weight: 300;
+      color: var(--muted); line-height: 1.7;
+    }
+
     /* ── RESPONSIVE ── */
     @media (max-width: 1024px) {
       .nav-right { display: none; }
@@ -748,6 +900,7 @@
     }
 
     @media (max-width: 900px) {
+      .payment-grid { grid-template-columns: 1fr; }
       .about-inner { grid-template-columns: 1fr; }
       .about-img-wrap { max-width: 440px; margin: 0 auto; }
       .gallery-grid { grid-template-columns: 1fr 1fr; }
@@ -793,6 +946,7 @@
       <a href="#gallery">Gallery</a>
       <a href="#rates">Rates</a>
       <a href="#screening">Screening</a>
+      <a href="#payment">Pay</a>
       <a href="mailto:tatianas.colombianparadise@gmail.com" class="nav-cta">Make Contact</a>
     </div>
     <button class="nav-toggle" id="navToggle" aria-label="Menu">
@@ -806,6 +960,7 @@
     <a href="#gallery" class="mobile-link">Gallery</a>
     <a href="#rates" class="mobile-link">Rates</a>
     <a href="#screening" class="mobile-link">Screening</a>
+    <a href="#payment" class="mobile-link">Pay</a>
     <a href="mailto:tatianas.colombianparadise@gmail.com" class="nav-cta">Make Contact</a>
   </div>
 
@@ -1079,6 +1234,132 @@
     </div>
   </section>
 
+  <!-- PAYMENT PORTAL -->
+  <section class="payment" id="payment">
+    <div class="payment-inner">
+      <div class="payment-header rv">
+        <p class="section-eyebrow">Payment Portal</p>
+        <h2 class="section-title">Send your tribute<br><em>right now.</em></h2>
+        <p style="font-size:0.88rem;font-weight:300;color:var(--muted);max-width:480px;margin-top:-0.5rem;line-height:1.75;">Card or crypto — zero friction. Select your amount and pay directly.</p>
+      </div>
+
+      <div class="payment-grid">
+
+        <!-- LEFT: FORM -->
+        <div class="rv">
+          <p class="section-eyebrow" style="margin-bottom:1rem;">Select Amount</p>
+          <div class="amount-grid">
+            <div class="amount-pill">
+              <input type="radio" name="tribute-amount" id="amt1" value="250" checked>
+              <label for="amt1">
+                <span class="pill-price">$250</span>
+                <span class="pill-label">30 min · Incall</span>
+              </label>
+            </div>
+            <div class="amount-pill">
+              <input type="radio" name="tribute-amount" id="amt2" value="300">
+              <label for="amt2">
+                <span class="pill-price">$300</span>
+                <span class="pill-label">60 min · Incall</span>
+              </label>
+            </div>
+            <div class="amount-pill">
+              <input type="radio" name="tribute-amount" id="amt3" value="400">
+              <label for="amt3">
+                <span class="pill-price">$400</span>
+                <span class="pill-label">60 min · Touring</span>
+              </label>
+            </div>
+            <div class="amount-pill">
+              <input type="radio" name="tribute-amount" id="amt4" value="custom">
+              <label for="amt4">
+                <span class="pill-price">Custom</span>
+                <span class="pill-label">Your Choice</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="custom-amount-wrap" id="customWrap">
+            <div class="stripe-card-field">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              <input type="number" placeholder="Enter amount in USD" id="customAmountInput" min="250">
+            </div>
+          </div>
+
+          <div class="pay-tabs">
+            <button class="pay-tab active" data-tab="stripe">✦ &nbsp;Card Payment</button>
+            <button class="pay-tab" data-tab="btc">₿ &nbsp;Bitcoin</button>
+          </div>
+
+          <!-- STRIPE PANEL -->
+          <div class="pay-panel active" id="panel-stripe">
+            <div class="stripe-card-field">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              <input type="text" placeholder="Name on card" id="cardName" autocomplete="cc-name" style="background:none;border:none;outline:none;color:var(--cream);font-family:'Jost',sans-serif;font-size:0.9rem;font-weight:300;width:100%;">
+            </div>
+            <div id="stripe-card-element" style="background:rgba(9,6,10,0.8);border:1px solid rgba(200,154,82,0.18);padding:0.95rem 1.1rem;margin-bottom:0.75rem;transition:border-color 0.2s;"></div>
+            <div id="stripe-card-errors" style="color:#e0314b;font-size:0.75rem;min-height:1.2rem;margin-bottom:0.5rem;font-weight:300;"></div>
+            <button class="pay-btn" id="stripePayBtn">Send Tribute — <span id="payBtnAmount">$250</span></button>
+            <div class="stripe-secure">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              Secured by Stripe &nbsp;·&nbsp; 256-bit SSL &nbsp;·&nbsp; PCI DSS Compliant
+            </div>
+          </div>
+
+          <!-- BITCOIN PANEL -->
+          <div class="pay-panel" id="panel-btc">
+            <div class="btc-network-badge">
+              <span style="width:7px;height:7px;border-radius:50%;background:#f7931a;display:inline-block;flex-shrink:0;"></span>
+              Bitcoin · Native SegWit (bech32)
+            </div>
+            <div class="btc-qr-wrap">
+              <div class="btc-qr">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=bitcoin:TATIANA_BTC_ADDRESS_HERE&color=09060a&bgcolor=ffffff&margin=0" alt="Bitcoin QR Code">
+              </div>
+              <div>
+                <p class="btc-label">Scan to Pay</p>
+                <p style="font-size:0.78rem;font-weight:300;color:var(--muted);line-height:1.7;">Open any Bitcoin wallet and scan. The address is pre-filled — enter your amount and send.</p>
+              </div>
+            </div>
+            <p class="btc-label">Wallet Address</p>
+            <div class="btc-address-wrap">
+              <span class="btc-address" id="btcAddress">TATIANA_BTC_ADDRESS_HERE</span>
+              <button class="btc-copy" id="btcCopyBtn">Copy</button>
+            </div>
+            <p class="btc-note">After sending, email a screenshot of your transaction confirmation to <a href="mailto:tatianas.colombianparadise@gmail.com">tatianas.colombianparadise@gmail.com</a> and we'll get started.</p>
+          </div>
+        </div>
+
+        <!-- RIGHT: EXPLAINER -->
+        <div class="payment-explainer rv">
+          <p class="section-eyebrow" style="margin-bottom:1.5rem;">Why this works</p>
+          <div class="explainer-item">
+            <div class="explainer-icon">✦</div>
+            <div>
+              <p class="explainer-title">Zero Friction</p>
+              <p class="explainer-desc">Card payment processes instantly. No Venmo limits, no app required. Your tribute arrives in seconds.</p>
+            </div>
+          </div>
+          <div class="explainer-item">
+            <div class="explainer-icon">₿</div>
+            <div>
+              <p class="explainer-title">Anonymous &amp; Discreet</p>
+              <p class="explainer-desc">Bitcoin sends directly to Tatiana's wallet. No bank, no intermediary, no record. Preferred for larger arrangements.</p>
+            </div>
+          </div>
+          <div class="explainer-item">
+            <div class="explainer-icon">⚡</div>
+            <div>
+              <p class="explainer-title">Instant Confirmation</p>
+              <p class="explainer-desc">Once payment clears, send a screenshot. Tatiana is notified immediately and the adventure begins.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
   <!-- CTA BAND -->
   <div class="cta-band">
     <div class="cta-band-bg"></div>
@@ -1233,6 +1514,131 @@
       entries.forEach(e => e.isIntersecting && e.target.classList.add('visible'));
     }, { threshold: 0.12 });
     document.querySelectorAll('.rv').forEach(el => io.observe(el));
+
+    // ── PAYMENT PORTAL ──
+    const STRIPE_PK = 'pk_live_51TNcc2Eejd0Gtstv2tyECsjR060uW9va2UwgNRZauVtIWT35weFkVWopFoDz3Tc2nq9ZFcJWqCBGWSSnMNZ63Oy500q5ibtpEb';
+    const stripe = Stripe(STRIPE_PK);
+    const stripeElements = stripe.elements({
+      fonts: [{ cssSrc: 'https://fonts.googleapis.com/css2?family=Jost:wght@300&display=swap' }]
+    });
+    const cardElement = stripeElements.create('card', {
+      style: {
+        base: {
+          color: '#f5eee0', fontFamily: '"Jost", sans-serif',
+          fontWeight: '300', fontSize: '15px', fontSmoothing: 'antialiased',
+          '::placeholder': { color: 'rgba(245,238,224,0.3)' },
+          iconColor: 'rgba(245,238,224,0.4)',
+        },
+        invalid: { color: '#e0314b', iconColor: '#e0314b' },
+      },
+      hidePostalCode: true,
+    });
+    cardElement.mount('#stripe-card-element');
+
+    const cardErrors = document.getElementById('stripe-card-errors');
+    cardElement.on('change', e => {
+      if (cardErrors) cardErrors.textContent = e.error ? e.error.message : '';
+      const el = document.getElementById('stripe-card-element');
+      if (el) el.style.borderColor = e.error ? '#e0314b' : e.complete ? 'var(--gold)' : 'rgba(200,154,82,0.18)';
+    });
+
+    const amountInputs = document.querySelectorAll('input[name="tribute-amount"]');
+    const customWrap = document.getElementById('customWrap');
+    const payBtnAmount = document.getElementById('payBtnAmount');
+    const customAmountInput = document.getElementById('customAmountInput');
+
+    function getNumericAmount() {
+      const checked = document.querySelector('input[name="tribute-amount"]:checked');
+      if (!checked) return 250;
+      if (checked.value === 'custom') return parseInt(customAmountInput?.value) || 0;
+      return parseInt(checked.value);
+    }
+    function getDisplayAmount() {
+      const n = getNumericAmount();
+      return n > 0 ? `$${n.toLocaleString()}` : 'Custom';
+    }
+
+    amountInputs.forEach(inp => {
+      inp.addEventListener('change', () => {
+        customWrap.classList.toggle('visible', inp.value === 'custom' && inp.checked);
+        if (payBtnAmount) payBtnAmount.textContent = getDisplayAmount();
+      });
+    });
+    if (customAmountInput) {
+      customAmountInput.addEventListener('input', () => {
+        if (payBtnAmount) payBtnAmount.textContent = getDisplayAmount();
+      });
+    }
+
+    document.querySelectorAll('.pay-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.pay-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.pay-panel').forEach(p => p.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById(`panel-${tab.dataset.tab}`)?.classList.add('active');
+      });
+    });
+
+    const stripePayBtn = document.getElementById('stripePayBtn');
+    if (stripePayBtn) {
+      stripePayBtn.addEventListener('click', async () => {
+        const amount = getNumericAmount();
+        if (!amount || amount < 250) {
+          if (cardErrors) cardErrors.textContent = 'Minimum tribute is $250.';
+          return;
+        }
+        const name = document.getElementById('cardName')?.value.trim();
+        if (!name) {
+          if (cardErrors) cardErrors.textContent = 'Please enter the name on your card.';
+          return;
+        }
+        stripePayBtn.textContent = 'Processing…';
+        stripePayBtn.classList.add('loading');
+        if (cardErrors) cardErrors.textContent = '';
+        try {
+          const res = await fetch('https://designmywebsitenow.com/api/create-payment-intent', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              amount,
+              client: 'Tatiana',
+              description: `Tribute — Tatiana Colombian Paradise — $${amount.toLocaleString()}`,
+            }),
+          });
+          const data = await res.json();
+          if (!res.ok || !data.clientSecret) throw new Error(data.error || 'Payment setup failed.');
+          const { error, paymentIntent } = await stripe.confirmCardPayment(data.clientSecret, {
+            payment_method: { card: cardElement, billing_details: { name } },
+          });
+          if (error) {
+            if (cardErrors) cardErrors.textContent = error.message;
+            stripePayBtn.textContent = `Send Tribute — ${getDisplayAmount()}`;
+            stripePayBtn.classList.remove('loading');
+          } else if (paymentIntent.status === 'succeeded') {
+            stripePayBtn.textContent = `✓ Tribute Received — ${getDisplayAmount()}`;
+            stripePayBtn.style.background = '#4a7c59';
+            stripePayBtn.style.color = '#fff';
+            cardElement.clear();
+          }
+        } catch (err) {
+          if (cardErrors) cardErrors.textContent = err.message || 'Something went wrong.';
+          stripePayBtn.textContent = `Send Tribute — ${getDisplayAmount()}`;
+          stripePayBtn.classList.remove('loading');
+        }
+      });
+    }
+
+    const btcCopyBtn = document.getElementById('btcCopyBtn');
+    const btcAddress = document.getElementById('btcAddress');
+    if (btcCopyBtn && btcAddress) {
+      btcCopyBtn.addEventListener('click', () => {
+        navigator.clipboard.writeText(btcAddress.textContent.trim()).then(() => {
+          btcCopyBtn.textContent = 'Copied ✦';
+          btcCopyBtn.classList.add('copied');
+          setTimeout(() => { btcCopyBtn.textContent = 'Copy'; btcCopyBtn.classList.remove('copied'); }, 2000);
+        });
+      });
+    }
 
     // Immediately reveal hero elements
     document.querySelectorAll('.hero .rv').forEach(el => {
