@@ -1484,50 +1484,66 @@
     // ── RATE BLOCK SCAN LINE — living inscription port ──
     (function () {
       const DURATION = 4400;
+      const isTouchDevice = window.matchMedia('(hover: none)').matches;
 
-      document.querySelectorAll('.rate-block').forEach(block => {
+      function runScan(block) {
         const rows = block.querySelector('.rate-rows, .avail-rows');
         if (!rows) return;
         const line = rows.querySelector('.scan-line');
         if (!line) return;
         const rowEls = Array.from(rows.querySelectorAll('.rate-row, .avail-row'));
+
+        const total = rows.offsetHeight;
+        const triggers = rowEls.map(r => r.offsetTop + r.offsetHeight * 0.5);
+        let nextTrigger = 0;
+        const startTime = performance.now();
+        line.style.transition = 'none';
+        line.style.opacity = '1';
+
+        function tick(now) {
+          const elapsed = now - startTime;
+          const progress = Math.min(elapsed / DURATION, 1);
+          const pos = progress * total;
+          line.style.transform = `translateY(${pos}px)`;
+          while (nextTrigger < triggers.length && pos >= triggers[nextTrigger]) {
+            const row = rowEls[nextTrigger];
+            row.classList.add('flash');
+            setTimeout(() => row.classList.remove('flash'), 500);
+            nextTrigger++;
+          }
+          if (progress < 1) {
+            requestAnimationFrame(tick);
+          } else {
+            line.style.transition = 'opacity 0.8s ease';
+            line.style.opacity = '0';
+          }
+        }
+        requestAnimationFrame(tick);
+      }
+
+      document.querySelectorAll('.rate-block').forEach(block => {
         let fired = false;
 
-        block.addEventListener('mouseenter', () => {
-          if (fired) return;
-          fired = true;
-
-          const total = rows.offsetHeight;
-          const triggers = rowEls.map(r => r.offsetTop + r.offsetHeight * 0.5);
-
-          let nextTrigger = 0;
-          const startTime = performance.now();
-          line.style.opacity = '1';
-
-          function tick(now) {
-            const elapsed = now - startTime;
-            const progress = Math.min(elapsed / DURATION, 1);
-            const pos = progress * total;
-
-            line.style.transform = `translateY(${pos}px)`;
-
-            while (nextTrigger < triggers.length && pos >= triggers[nextTrigger]) {
-              const row = rowEls[nextTrigger];
-              row.classList.add('flash');
-              setTimeout(() => row.classList.remove('flash'), 500);
-              nextTrigger++;
-            }
-
-            if (progress < 1) {
-              requestAnimationFrame(tick);
-            } else {
-              line.style.transition = 'opacity 0.8s ease';
-              line.style.opacity = '0';
-            }
-          }
-
-          requestAnimationFrame(tick);
-        });
+        if (isTouchDevice) {
+          // Mobile: trigger when block scrolls into view
+          const io = new IntersectionObserver(entries => {
+            entries.forEach(e => {
+              if (e.isIntersecting && !fired) {
+                fired = true;
+                runScan(block);
+                io.unobserve(block);
+              }
+            });
+          }, { threshold: 0.45 });
+          io.observe(block);
+        } else {
+          // Desktop: trigger on first hover
+          block.addEventListener('mouseenter', () => {
+            if (fired) return;
+            fired = true;
+            runScan(block);
+          });
+        }
       });
     })();
 
