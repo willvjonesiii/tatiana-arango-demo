@@ -722,6 +722,27 @@
       color: var(--muted); font-style: italic;
       line-height: 1.6;
     }
+    .rate-request {
+      display: block;
+      margin-top: 2rem;
+      padding-top: 1.6rem;
+      border-top: 1px solid rgba(200,154,82,0.12);
+      font-size: 0.62rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--gold);
+      text-decoration: none;
+      font-weight: 400;
+      transition: color 0.3s, letter-spacing 0.3s;
+      white-space: nowrap; flex-shrink: 0;
+    }
+    .rate-request::after {
+      content: ' →';
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .rate-block:hover .rate-request { color: var(--gold-lt); letter-spacing: 0.28em; }
+    .rate-block:hover .rate-request::after { opacity: 1; }
     .avail-rows { display: flex; flex-direction: column; gap: 0; }
     .avail-row {
       display: flex; justify-content: space-between; align-items: center;
@@ -1158,6 +1179,7 @@
               <span class="rate-price">$600</span>
             </div>
           </div>
+          <a href="#screening" class="rate-request">Request This Arrangement</a>
         </div>
 
         <!-- Touring / Outcall -->
@@ -1186,6 +1208,7 @@
             </div>
           </div>
           <p class="rate-note">30% deposit required for touring bookings</p>
+          <a href="#screening" class="rate-request">Request This Arrangement</a>
         </div>
 
         <!-- Availability -->
